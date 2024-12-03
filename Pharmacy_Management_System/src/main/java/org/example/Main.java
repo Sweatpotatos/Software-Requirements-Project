@@ -1,14 +1,15 @@
 package org.example;
-import java.util.*;
-import java.sql.*;
-import java.util.Date;
-import java.sql.*;
-
-// Import the new classes
-import org.example.User;
-import org.example.PasswordUtils;
-import java.text.SimpleDateFormat;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Scanner;
 
 
 public class Main {
@@ -104,72 +105,142 @@ public class Main {
     }
 
 
-    public static User login() {
-    System.out.println("\nPlease log in to continue:");
-    System.out.print("Username: ");
-    String username = scanner.nextLine();
-    System.out.print("Password: ");
-    String password = scanner.nextLine();
+    private static User login() {
+    System.out.println("Enter email:");
+    String email = getInputString();
+    System.out.println("Enter password:");
+    String password = getInputString();
 
-    User user = dbHandler.getUserByUsername(username);
-
-    if (user != null) {
-        // Verify the password
-        boolean passwordMatch = PasswordUtils.verifyPassword(password, user.getHashedPassword(), user.getSalt());
-        if (passwordMatch) {
-            System.out.println("Login successful. Welcome, " + user.getUsername() + "!");
-            return user;
-        } else {
-            System.out.println("Invalid username or password. Please try again.");
-            return null;
+    String query = "SELECT * FROM users WHERE email = ?";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            String storedHash = rs.getString("password");
+            String role = rs.getString("role");
+            
+            // Hash the input password and compare
+            String hashedInput = hashPassword(password);
+            
+            if (hashedInput.equals(storedHash)) {
+                System.out.println("Login successful!");
+                return new User(email, storedHash, role);
+            }
         }
-    } else {
-        System.out.println("Invalid username or password. Please try again.");
-        return null;
+        System.out.println("Invalid email or password");
+    } catch (SQLException e) {
+        System.out.println("Login error: " + e.getMessage());
+    }
+    return null;
+}
+
+private static void registerUser() {
+    System.out.println("Enter your email:");
+    String email = getInputString();
+    
+    if (!isValidEmail(email)) {
+        System.out.println("Invalid email format");
+        return;
+    }
+    
+    if (isEmailExists(email)) {
+        System.out.println("User already exists with this email.");
+        return;
+    }
+    
+    System.out.println("Enter your password:");
+    String password = getInputString();
+    
+    System.out.println("Select role:");
+    System.out.println("1. Manager");
+    System.out.println("2. Pharmacist");
+    System.out.println("3. Technician");
+    System.out.println("4. Patient");
+    
+    int roleChoice = getInputInt();
+    String role;
+    
+    switch (roleChoice) {
+        case 1: role = "MANAGER"; break;
+        case 2: role = "PHARMACIST"; break;
+        case 3: role = "TECHNICIAN"; break;
+        case 4: role = "PATIENT"; break;
+        default:
+            System.out.println("Invalid role selection");
+            return;
+    }
+    
+    String hashedPassword = hashPassword(password);
+    addUserToDatabase(email, hashedPassword, role);
+    System.out.println("Registration successful!");
+}
+
+
+private static void addUserToDatabase(String email, String hashedPassword, String role) {
+    String query = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        stmt.setString(2, hashedPassword);
+        stmt.setString(3, role);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        System.out.println("Error creating user: " + e.getMessage());
     }
 }
 
-public static void registerUser() {
-    System.out.println("\nUser Registration:");
-    System.out.print("Enter Username: ");
-    String username = scanner.nextLine();
+private static boolean isValidEmail(String email) {
+    String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+    return email.matches(emailRegex);
+}
 
-    // Check if username already exists
-    if (dbHandler.userExists(username)) {
-        System.out.println("Username already exists. Please choose a different username.");
-        return;
+private static boolean isEmailExists(String email) {
+    String query = "SELECT COUNT(*) FROM users WHERE email = ?";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        
+        // Debug prints
+        System.out.println("Executing query: " + query);
+        System.out.println("With email: " + email);
+        
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            System.out.println("Found " + count + " matching emails"); // Debug print
+            return count > 0;
+        }
+    } catch (SQLException e) {
+        System.out.println("Error checking email: " + e.getMessage());
+        e.printStackTrace();
     }
+    return false;
+}
 
-    System.out.print("Enter Password: ");
-    String password = scanner.nextLine();
-
-    // Generate salt
-    String salt = PasswordUtils.getSalt();
-    // Hash the password
-    String hashedPassword = PasswordUtils.hashPassword(password, salt);
-
-    System.out.print("Enter Role (Manager, Patient): ");
-    String role = scanner.nextLine();
-
-    // Validate role
-    if (!role.equalsIgnoreCase("Manager") && !role.equalsIgnoreCase("Patient")) {
-        System.out.println("Invalid role. Please enter 'Manager' or 'Patient'.");
-        return;
-    }
-
-    // Create a User object
-    User user = new User(username, hashedPassword, salt, role);
-
-    // Save user credentials to the database
-    boolean success = dbHandler.saveUser(user);
-
-    if (success) {
-        System.out.println("User registered successfully.");
-    } else {
-        System.out.println("Registration failed.");
+private static void addUserToDatabase(String email, String hashedPassword) {
+    String query = "INSERT INTO users (email, password, role) VALUES (?, ?, 'USER')";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        stmt.setString(2, hashedPassword);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        System.out.println("Error adding user: " + e.getMessage());
+        e.printStackTrace();
     }
 }
 
+private static String hashPassword(String password) {
+    try {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashedBytes = md.digest(password.getBytes());
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashedBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+    }
+}
 
 public static void showMainMenu(User currentUser) {
     System.out.println("\nMain Menu:");
@@ -300,28 +371,7 @@ public static void logout() {
         System.out.print("Enter your choice: ");
     }
 
-    //user class
-    // public class User {
-    //     private String username;
-    //     private String password; // This will be the hashed password
-    //     private String role;     // e.g., Manager, Pharmacist, Technician, Patient
-    
-    //     // Constructor
-    //     public User(String username, String password, String role) {
-    //         this.username = username;
-    //         this.password = password;
-    //         this.role = role;
-    //     }
-    
-    //     // Getters
-    //     public String getUsername() { return username; }
-    //     public String getPassword() { return password; }
-    //     public String getRole() { return role; }
-    
-    //     // Setters
-    //     public void setPassword(String password) { this.password = password; }
-    //     public void setRole(String role) { this.role = role; }
-    // }
+    // User class definition removed as it's now using org.example.User
     
    
 
@@ -1365,26 +1415,21 @@ public static void logout() {
         return false;
     }
 
-    private static boolean isEmailExists(String email) {
-        String query = "SELECT COUNT(*) FROM Customers WHERE email = '" + email + "'";
-        ResultSet rs = dbHandler.executeSelectQuery(query);
-        try {
-            if (rs != null && rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error checking email existence: " + e.getMessage());
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error closing ResultSet: " + e.getMessage());
-            }
-        }
-        return false;
+    // Utility method to handle string input
+    private static String getInputString() {
+    Scanner scanner = new Scanner(System.in);
+    String input = scanner.nextLine().trim();
+    
+    // Validate input is not empty
+    while (input.isEmpty()) {
+        System.out.println("Input cannot be empty. Please try again:");
+        input = scanner.nextLine().trim();
     }
+    
+    return input;
+}
+
+    
 
     // Method to get the next drug ID
     private static int getNextDrugId() {

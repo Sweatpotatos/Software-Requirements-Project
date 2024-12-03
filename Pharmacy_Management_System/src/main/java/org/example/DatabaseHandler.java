@@ -1,19 +1,23 @@
 package org.example;
 
-import java.io.*;
-import java.sql.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
-
-import java.util.Base64;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 
 public class DatabaseHandler {
     private Connection connection;
+    public Connection getConnection() {
 
+        return connection;
+
+    }
     public void connect() {
         try {
             String url = "jdbc:postgresql://localhost:5432/pharmacy";
@@ -183,7 +187,7 @@ public class DatabaseHandler {
     public boolean saveUser(User user) {
         String sql = "INSERT INTO users (username, hashed_password, salt, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, user.getUsername());
+            pstmt.setString(1, user.getEmail()); 
             pstmt.setString(2, user.getHashedPassword());
             pstmt.setString(3, user.getSalt());
             pstmt.setString(4, user.getRole());
@@ -205,7 +209,7 @@ public class DatabaseHandler {
                 String hashedPassword = rs.getString("hashed_password");
                 String salt = rs.getString("salt");
                 String role = rs.getString("role");
-                return new User(username, hashedPassword, salt, role);
+                return new User(username, hashedPassword,role);
             } else {
                 return null; // User not found
             }

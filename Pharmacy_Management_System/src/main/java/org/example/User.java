@@ -1,28 +1,33 @@
 package org.example;
 
 public class User {
-    private String username;
-    private String hashedPassword;
+    private String email;
+
+    private String password;
+
     private String salt;
-    private String role; // e.g., Manager, Pharmacist, Technician, Patient
+
+    private String role;
 
     // Constructor
-    public User(String username, String hashedPassword, String salt, String role) {
-        this.username = username;
-        this.hashedPassword = hashedPassword;
-        this.salt = salt;
-        this.role = role;
-    }
+    public User(String email, String password, String role) {
+    this.email = email;
+    this.password = password;
+    this.role = role;
+}
 
     // Getters
-    public String getUsername() { return username; }
-    public String getHashedPassword() { return hashedPassword; }
-    public String getSalt() { return salt; }
+    public String getEmail() { return email; }
+    public String getHashedPassword() { return password; }
     public String getRole() { return role; }
 
     // Setters (if needed)
-    public void setHashedPassword(String hashedPassword) { this.hashedPassword = hashedPassword; }
-    public void setSalt(String salt) { this.salt = salt; }
+    public void setEmail(String email) { this.email = email; }
+    public void setHashedPassword(String hashedPassword) { this.password = hashedPassword; }
     public void setRole(String role) { this.role = role; }
-}
+    public String getSalt() {
 
+        return salt;
+
+    }
+}
