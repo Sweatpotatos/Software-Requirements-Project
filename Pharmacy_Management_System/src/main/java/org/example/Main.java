@@ -20,7 +20,9 @@ public class Main {
     private static LinkedListDSA<Cart> cartList = new LinkedListDSA<>(); // List to store carts
     private static StackDSA actionStack = new StackDSA(100); // Stack to store user actions
     private static int cartIdCounter = 1; // cartIdCounter is incremented to ensure that each cart has a unique identifier.
-
+    private static final String MANAGER_CODE = "MGR123";
+    private static final String PHARMACIST_CODE = "PHARM456";
+    private static final String TECHNICIAN_CODE = "TECH789";
     // public static void main(String[] args) {
     //     dbHandler.connect(); // Connect to the database
     //     loadInitialData(); // Load initial data from the database
@@ -152,7 +154,7 @@ private static void registerUser() {
     System.out.println("Enter your password:");
     String password = getInputString();
     
-    System.out.println("Select role:");
+    System.out.println("\nSelect role:");
     System.out.println("1. Manager");
     System.out.println("2. Pharmacist");
     System.out.println("3. Technician");
@@ -161,19 +163,43 @@ private static void registerUser() {
     int roleChoice = getInputInt();
     String role;
     
+    boolean isValidRegistration = false;
+    
     switch (roleChoice) {
-        case 1: role = "MANAGER"; break;
-        case 2: role = "PHARMACIST"; break;
-        case 3: role = "TECHNICIAN"; break;
-        case 4: role = "PATIENT"; break;
+        case 1:
+            role = "MANAGER";
+            isValidRegistration = verifyStaffCode(role, MANAGER_CODE);
+            break;
+        case 2:
+            role = "PHARMACIST";
+            isValidRegistration = verifyStaffCode(role, PHARMACIST_CODE);
+            break;
+        case 3:
+            role = "TECHNICIAN";
+            isValidRegistration = verifyStaffCode(role, TECHNICIAN_CODE);
+            break;
+        case 4:
+            role = "PATIENT";
+            isValidRegistration = true;
+            break;
         default:
             System.out.println("Invalid role selection");
             return;
     }
     
-    String hashedPassword = hashPassword(password);
-    addUserToDatabase(email, hashedPassword, role);
-    System.out.println("Registration successful!");
+    if (isValidRegistration) {
+        String hashedPassword = hashPassword(password);
+        addUserToDatabase(email, hashedPassword, role);
+        System.out.println("Registration successful!");
+    } else {
+        System.out.println("Registration failed - Invalid verification code");
+    }
+}
+
+private static boolean verifyStaffCode(String role, String correctCode) {
+    System.out.println("Enter verification code for " + role + ":");
+    String inputCode = getInputString();
+    return inputCode.equals(correctCode);
 }
 
 
