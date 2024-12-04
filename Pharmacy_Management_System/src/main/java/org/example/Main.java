@@ -200,6 +200,51 @@ private static void registerUser() {
     }
 }
 
+private static String getAllergySelections() {
+    System.out.println("\nSelect your allergies (Enter numbers separated by commas, or 0 for none):");
+    System.out.println("0. None");
+    System.out.println("1. Penicillin allergy");
+    System.out.println("2. Sulfa allergy");
+    System.out.println("3. Neomycin allergy");
+    System.out.println("4. Cephalosporin allergy");
+    System.out.println("5. Aspirin allergy");
+    System.out.println("6. Carbamazepine allergy");
+    System.out.println("7. Iodine allergy");
+    System.out.println("8. Paclitaxel allergy");
+    System.out.println("9. Allopurinol allergy");
+    System.out.println("10. Phenytoin allergy");
+    System.out.println("11. Methotrexate allergy");
+    System.out.println("12. Chloramphenicol allergy");
+    System.out.println("13. Lidocaine allergy");
+
+    String input = getInputString();
+    if (input.equals("0") || input.toLowerCase().equals("none")) {
+        return "none";
+    }
+
+    String[] allergyMap = {
+        "", "Penicillin", "Sulfa", "Neomycin", "Cephalosporin", 
+        "Aspirin", "Carbamazepine", "Iodine", "Paclitaxel",
+        "Allopurinol", "Phenytoin", "Methotrexate", "Chloramphenicol", "Lidocaine"
+    };
+
+    StringBuilder allergies = new StringBuilder();
+    String[] selections = input.split(",");
+    
+    for (int i = 0; i < selections.length; i++) {
+        try {
+            int choice = Integer.parseInt(selections[i].trim());
+            if (choice > 0 && choice < allergyMap.length) {
+                if (i > 0) allergies.append(", ");
+                allergies.append(allergyMap[choice]);
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input: " + selections[i] + " (skipped)");
+        }
+    }
+
+    return allergies.length() > 0 ? allergies.toString() : "none";
+}
 
 private static void registerCustomerAfterUserRegistration(String email) {
     System.out.println("\nComplete your customer profile:");
@@ -209,10 +254,11 @@ private static void registerCustomerAfterUserRegistration(String email) {
     String phoneNumber = getInputString();
     System.out.println("Enter your address:");
     String address = getInputString();
+    String allergies = getAllergySelections();
 
-    Customer customer = new Customer(email, name, address, phoneNumber);
+    Customer customer = new Customer(email, name, address, phoneNumber, allergies);
         customerList.add(customer);
-        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "')");
+        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "', '" + allergies + "')");
         System.out.println("Customer registered successfully!");
         actionStack.push("Registered customer with email: " + email);
 }
@@ -380,7 +426,7 @@ public static void handlePatientChoice(int choice, User currentUser) {
             drugManagement(currentUser); // You'll need to implement this method
             break;
         case 2:
-            manageCart(); // You'll need to implement this method
+            patientCart(currentUser); // You'll need to implement this method
             break;
         case 3:
             updatePatient(currentUser); // Assuming this method exists
@@ -468,7 +514,7 @@ public static void logout() {
             } else if (currentUser.getRole().equals("PATIENT")) {
                 System.out.println("\n=== Drug Management (Patient) ===");
                 System.out.println("1. View Drug Inventory");
-                System.out.println("2. Search Drug");
+                System.out.println("2. View Cart");
                 System.out.println("3. Help");
                 System.out.println("4. Return to Main Menu");
                 
@@ -478,7 +524,7 @@ public static void logout() {
                         viewDrugInventory();
                         break;
                     case 2:
-                        listExpiredDrugs();
+                        patientCart(currentUser);
                         break;
                     case 3:
                         help();
@@ -491,6 +537,46 @@ public static void logout() {
             } else {
                 System.out.println("Unauthorized access");
                 return;
+            }
+        }
+    }
+
+    private static void patientCart(User currentUser) {
+
+        String email = currentUser.getEmail();
+
+        Customer customer = findCustomerByEmail(email);
+        if (customer == null) {
+            System.out.println("Customer not found / Wrong Email Entered.");
+            return;
+        }
+
+        Cart cart = findCartByEmail(email);
+        if (cart == null) {
+            cart = new Cart(cartIdCounter++, email);
+            cartList.add(cart);
+        }
+
+        while (true) {
+            showCartMenu();
+            int choice = getInputInt();
+            switch (choice) {
+                case 1:
+                    addDrugToCart(cart);
+                    break;
+                case 2:
+                    viewCart(cart);
+                    break;
+                case 3:
+                    checkout(cart);
+                    return;
+                case 4:
+                    help();
+                    break;
+                case 5:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
             }
         }
     }
@@ -552,6 +638,7 @@ public static void logout() {
         String name;
         String address;
         String phoneNumber;
+        String allergies;
 
         // email
         while (true) {
@@ -602,9 +689,12 @@ public static void logout() {
             }
         }
 
-        Customer customer = new Customer(email, name, address, phoneNumber);
+        System.out.print("Enter Customer allergies: ");
+        allergies = getAllergySelections();
+
+        Customer customer = new Customer(email, name, address, phoneNumber, allergies);
         customerList.add(customer);
-        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "')");
+        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "', '" + allergies + "')");
         System.out.println("Customer registered successfully!");
         actionStack.push("Registered customer with email: " + email);
     }
@@ -620,6 +710,7 @@ public static void logout() {
         String name = "";
         String address = "";
         String phoneNumber = "";
+        String allergies = "";
 
         // Validate name
         while (true) {
@@ -647,13 +738,32 @@ public static void logout() {
             }
         }
 
+        allergies = getAllergySelections();
+
         customer.setName(name);
         customer.setAddress(address);
         customer.setPhoneNumber(phoneNumber);
+        customer.setAllergies(allergies);
 
-        dbHandler.executeQuery("UPDATE Customers SET name='" + name + "', address='" + address + "', phone_number='" + phoneNumber + "' WHERE email='" + email + "'");
-        System.out.println("Customer updated successfully!");
-        actionStack.push("Updated customer with email: " + email);
+        try {
+            String updateQuery = "UPDATE Customers SET name=?, address=?, phone_number=?, allergy=? WHERE email=?";
+            PreparedStatement pstmt = dbHandler.getConnection().prepareStatement(updateQuery);
+            pstmt.setString(1, name);
+            pstmt.setString(2, address);
+            pstmt.setString(3, phoneNumber);
+            pstmt.setString(4, allergies);
+            pstmt.setString(5, email);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Customer updated successfully!");
+                actionStack.push("Updated customer with email: " + email);
+            } else {
+                System.out.println("No customer found with email: " + email);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating customer: " + e.getMessage());
+        }
     }
     // Update customer information
     private static void updateCustomer() {
@@ -670,6 +780,7 @@ public static void logout() {
         String name = "";
         String address = "";
         String phoneNumber = "";
+        String allergies = "";
 
         // Validate name
         while (true) {
@@ -696,14 +807,34 @@ public static void logout() {
                 System.out.println("Invalid phone number. Phone number must contain only digits and be between 10 to 15 digits long.");
             }
         }
+        allergies=getAllergySelections();
+        
 
         customer.setName(name);
         customer.setAddress(address);
         customer.setPhoneNumber(phoneNumber);
+        customer.setAllergies(allergies);
+        
 
-        dbHandler.executeQuery("UPDATE Customers SET name='" + name + "', address='" + address + "', phone_number='" + phoneNumber + "' WHERE email='" + email + "'");
-        System.out.println("Customer updated successfully!");
-        actionStack.push("Updated customer with email: " + email);
+        try {
+            String updateQuery = "UPDATE Customers SET name=?, address=?, phone_number=?, allergy=? WHERE email=?";
+            PreparedStatement pstmt = dbHandler.getConnection().prepareStatement(updateQuery);
+            pstmt.setString(1, name);
+            pstmt.setString(2, address);
+            pstmt.setString(3, phoneNumber);
+            pstmt.setString(4, allergies);
+            pstmt.setString(5, email);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Customer updated successfully!");
+                actionStack.push("Updated customer with email: " + email);
+            } else {
+                System.out.println("No customer found with email: " + email);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating customer: " + e.getMessage());
+        }
     }
 
     // Delete a customer
@@ -1277,34 +1408,38 @@ public static void logout() {
       6. Logs the action to the action stack.
 
      */
-    private static void checkout(Cart cart) {
-        // Check if the cart is empty in the database
-        if (isCartEmptyInDatabase(cart.getEmail())) {
-            System.out.println("Cart is empty. Cannot checkout.");
-            return;
-        }
-
-        double totalAmount = calculateTotalAmount(cart);
-
-        if (totalAmount == 0) {
-            System.out.println("Total amount is zero. Cannot checkout.");
-            return;
-        }
-
-        Order order = new Order(cart.getCartId(), cart.getEmail(), new Date(), totalAmount, cart.getItems());
-
-        try {
-            order.saveOrder();
-            order.generateInvoice();
-
-            cart.getItems().clear();
-            dbHandler.deleteCartByEmail(cart.getEmail());
-            System.out.println("Checkout successful! Invoice generated.");
-            actionStack.push("Checked out cart with ID: " + cart.getCartId());
-        } catch (Exception e) {
-            System.out.println("Error during checkout: " + e.getMessage());
-        }
+private static void checkout(Cart cart) {
+    // Check if the cart is empty in the database
+    if (isCartEmptyInDatabase(cart.getEmail())) {
+        System.out.println("Cart is empty. Cannot checkout.");
+        return;
     }
+
+    double totalAmount = calculateTotalAmount(cart);
+
+    if (totalAmount == 0) {
+        System.out.println("Total amount is zero. Cannot checkout.");
+        return;
+    }
+
+    Order order = new Order(cart.getCartId(), cart.getEmail(), new Date(), totalAmount, cart.getItems());
+
+    try {
+        order.saveOrder(dbHandler);
+        order.generateInvoice();
+
+        cart.getItems().clear();
+        dbHandler.deleteCartByEmail(cart.getEmail());
+        System.out.println("Checkout successful! Invoice generated.");
+        actionStack.push("Checked out cart with ID: " + cart.getCartId());
+    } catch (SQLException e) {
+        System.out.println("Database error during checkout: " + e.getMessage());
+    } catch (Exception e) {
+        System.out.println("Unexpected error during checkout: " + e.getMessage());
+        e.printStackTrace(); // Add stack trace for debugging
+    }
+}
+
 
     private static boolean isCartEmptyInDatabase(String email) {
         String query = "SELECT COUNT(*) AS item_count FROM Cart WHERE email = '" + email + "'";
@@ -1445,7 +1580,7 @@ public static void logout() {
                 String address = resultSet.getString("address");
                 String phoneNumber = resultSet.getString("phone_number");
 
-                Customer customer = new Customer(email, name, address, phoneNumber);
+                Customer customer = new Customer(email, name, address, phoneNumber, "none");
                 customerList.add(customer);
             }
             System.out.println("Initial customer data loaded successfully!");

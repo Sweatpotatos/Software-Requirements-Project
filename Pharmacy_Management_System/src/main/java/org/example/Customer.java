@@ -5,12 +5,14 @@ public class Customer {
     private String name;
     private String address;
     private String phoneNumber;
+    private String allergies;
 
-    public Customer(String email, String name, String address, String phoneNumber) {
+    public Customer(String email, String name, String address, String phoneNumber, String allergies) {
         this.email = email;
         this.name = name;
         this.address = address;
         this.phoneNumber = phoneNumber;
+        this.allergies = allergies;
     }
 
     // Getters and Setters
@@ -22,11 +24,13 @@ public class Customer {
     public void setEmail(String email) {
         this.email = email;
     }
+    public String getAllergies() { return allergies; }
 
     public String getName() {
         return name;
     }
 
+    public void setAllergies(String allergies) { this.allergies = allergies; }
     public void setName(String name) {
         this.name = name;
     }
@@ -41,6 +45,12 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "Customer [email=" + email + ", name=" + name + ", address=" + address + ", phoneNumber=" + phoneNumber + "]";
+        return "Customer{" +
+                "email='" + email + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", allergies='" + allergies + '\'' +
+                '}';
     }
 }

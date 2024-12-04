@@ -111,6 +111,10 @@ CREATE TABLE Customers (
     phone_number VARCHAR(15) NOT NULL
 );
 
+ALTER TABLE Customers
+ADD allergy TEXT;
+
+
 CREATE TABLE Cart (
     cart_id SERIAL PRIMARY KEY,
     email VARCHAR(255),
@@ -230,6 +234,29 @@ INSERT INTO Drugs (drug_id, drug_name, manufacturer, expiry_date, quantity, pric
 (1030, 'Lorazepam', 'CalmMeds', '2025-11-20', 12, 9.80, 'Medication used to treat anxiety disorders', 'anxiety,calm');
 
 ```
+
+INSERT INTO Drugs (drug_id, drug_name, manufacturer, expiry_date, quantity, price, description, tags, allergy) VALUES
+(1031, 'Penicillin', 'Antibiotix', '2025-12-31', 50, 10.99, 'Antibiotic used to treat bacterial infections', 'infection,antibiotic,bacteria', 'Penicillin allergy'),
+(1032, 'Sulfasalazine', 'ImmunePharma', '2026-03-15', 30, 15.25, 'Medication used to treat rheumatoid arthritis and inflammatory bowel disease', 'inflammation,arthritis,bowel', 'Sulfa allergy'),
+(1033, 'Neomycin', 'EarCare', '2025-10-20', 75, 5.50, 'Antibiotic used to treat skin infections and prevent bacterial contamination', 'antibiotic,infection,skin', 'Neomycin allergy'),
+(1034, 'Cephalexin', 'BioPharma', '2025-11-30', 60, 9.75, 'Antibiotic used to treat bacterial infections', 'infection,antibiotic,bacteria', 'Cephalosporin allergy'),
+(1035, 'Aspirin', 'PainKillersInc', '2025-08-15', 150, 4.20, 'Pain reliever and anti-inflammatory', 'pain,fever,inflammation', 'Aspirin allergy'),
+(1036, 'Carbamazepine', 'NeuroPharma', '2026-06-01', 40, 14.50, 'Medication used to treat seizures and nerve pain', 'seizures,nerve pain,neuropathy', 'Carbamazepine allergy'),
+(1037, 'Trimethoprim', 'UTICare', '2025-09-25', 50, 12.80, 'Antibiotic used to treat urinary tract infections', 'antibiotic,UTI,infection', 'Sulfa allergy'),
+(1038, 'Iodine', 'ThyroidMeds', '2025-12-10', 20, 7.20, 'Used as a disinfectant and for thyroid conditions', 'disinfectant,thyroid', 'Iodine allergy'),
+(1039, 'Paclitaxel', 'OncoPharma', '2026-05-20', 15, 80.50, 'Chemotherapy drug used to treat cancer', 'cancer,chemotherapy', 'Paclitaxel allergy'),
+(1040, 'Allopurinol', 'GoutRelief', '2025-11-05', 100, 6.70, 'Medication used to treat gout and kidney stones', 'gout,kidney stones,arthritis', 'Allopurinol allergy'),
+(1041, 'Phenytoin', 'SeizureControl', '2025-10-15', 50, 8.90, 'Medication used to control seizures', 'seizures,neurology', 'Phenytoin allergy'),
+(1042, 'Ceftriaxone', 'Antibiotix', '2025-09-30', 45, 19.50, 'Antibiotic used to treat bacterial infections', 'infection,antibiotic,bacteria', 'Cephalosporin allergy'),
+(1043, 'Loratadine', 'AllergyFix', '2026-02-20', 200, 5.50, 'Antihistamine used to treat allergies', 'allergy,antihistamine', 'None'),
+(1044, 'Paclitaxel', 'OncoMed', '2026-03-15', 25, 85.99, 'Chemotherapy drug used to treat various types of cancer', 'cancer,chemotherapy', 'Paclitaxel allergy'),
+(1045, 'Epinephrine', 'LifeSaverMeds', '2025-07-10', 10, 25.30, 'Used for emergency treatment of severe allergic reactions (anaphylaxis)', 'emergency,allergy,anaphylaxis', 'None'),
+(1046, 'Doxycycline', 'BioPharma', '2025-10-05', 80, 14.90, 'Antibiotic used to treat bacterial infections', 'antibiotic,infection,bacteria', 'None'),
+(1047, 'Methotrexate', 'ImmuneCare', '2025-11-15', 60, 12.60, 'Used to treat cancer and autoimmune diseases', 'cancer,autoimmune', 'Methotrexate allergy'),
+(1048, 'Hydroxyzine', 'CalmCare', '2025-12-01', 150, 5.90, 'Used to treat anxiety, nausea, and allergies', 'anxiety,allergy,nausea', 'None'),
+(1049, 'Chloramphenicol', 'EyeRelief', '2026-01-20', 70, 11.30, 'Antibiotic used to treat eye infections', 'eye infections,antibiotic', 'Chloramphenicol allergy'),
+(1050, 'Lidocaine', 'PainRelief', '2025-09-15', 40, 10.25, 'Local anesthetic and antiarrhythmic drug', 'local anesthetic,pain relief', 'Lidocaine allergy');
+
 
 # Usage Instructions
 ## Prerequisites

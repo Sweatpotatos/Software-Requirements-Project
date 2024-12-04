@@ -1,7 +1,12 @@
 package org.example;
 
-import java.io.*;
-import java.sql.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -78,26 +83,25 @@ public class Order {
 
      Throws SQLException If there is an error while interacting with the database.
      */
-    public void saveOrder() throws SQLException {
+    public void saveOrder(DatabaseHandler dbHandler) throws SQLException {
         Connection connection = null;
         PreparedStatement orderStatement = null;
         PreparedStatement itemStatement = null;
-        PreparedStatement updateDrugStatement = null;
 
         String maxOrderIdSQL = "SELECT COALESCE(MAX(order_id), 0) FROM Orders";
         String insertOrderSQL = "INSERT INTO Orders (order_id, email, order_date, total_amount) VALUES (?, ?, ?, ?)";
         String insertOrderItemSQL = "INSERT INTO OrderItems (order_id, drug_id, quantity, price) VALUES (?, ?, ?, ?)";
 
         try {
-            // Establish database connection
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/pharmacy", "postgres", "1806");
+            // Use existing connection
+            connection = dbHandler.getConnection();
             connection.setAutoCommit(false); // Enable transaction
 
             // Retrieve the current maximum order ID
             Statement maxOrderIdStatement = connection.createStatement();
             ResultSet rs = maxOrderIdStatement.executeQuery(maxOrderIdSQL);
             if (rs.next()) {
-                this.orderId = rs.getInt(1) + 1; // Increment the max order ID or start from 1 if there are no orders
+                this.orderId = rs.getInt(1) + 1; // Increment the max order ID
             }
 
             // Insert order details
@@ -108,7 +112,7 @@ public class Order {
             orderStatement.setDouble(4, totalAmount);
             orderStatement.executeUpdate();
 
-            // Insert each cart item into OrderItems table and update drug quantities
+            // Insert each cart item and update drug quantities
             for (int i = 0; i < items.size(); i++) {
                 CartItem item = items.get(i);
                 itemStatement = connection.prepareStatement(insertOrderItemSQL);
@@ -117,7 +121,11 @@ public class Order {
                 itemStatement.setInt(3, item.getQuantity());
                 itemStatement.setDouble(4, item.getDrug().getPrice());
                 itemStatement.executeUpdate();
+
+                // Update drug quantities (implement this method accordingly)
+                updateDrugQuantity(connection, item.getDrug().getDrugId(), item.getQuantity());
             }
+
             connection.commit(); // Commit transaction
 
         } catch (SQLException e) {
@@ -130,14 +138,23 @@ public class Order {
             }
             throw e;
         } finally {
-            // Close resources
+            // Close statements, but do not close the shared connection
             try {
                 if (orderStatement != null) orderStatement.close();
                 if (itemStatement != null) itemStatement.close();
-                if (connection != null) connection.close();
+                // Do not close the connection here
             } catch (SQLException e) {
                 System.out.println("Error closing resources: " + e.getMessage());
             }
+        }
+    }
+
+    private void updateDrugQuantity(Connection connection, int drugId, int quantityPurchased) throws SQLException {
+        String updateDrugSQL = "UPDATE Drugs SET quantity = quantity - ? WHERE drug_id = ?";
+        try (PreparedStatement updateDrugStmt = connection.prepareStatement(updateDrugSQL)) {
+            updateDrugStmt.setInt(1, quantityPurchased);
+            updateDrugStmt.setInt(2, drugId);
+            updateDrugStmt.executeUpdate();
         }
     }
 
