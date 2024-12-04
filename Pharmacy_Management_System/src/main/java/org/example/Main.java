@@ -191,9 +191,30 @@ private static void registerUser() {
         String hashedPassword = hashPassword(password);
         addUserToDatabase(email, hashedPassword, role);
         System.out.println("Registration successful!");
+        if (role.equals("PATIENT")) {
+            registerCustomerAfterUserRegistration(email);
+        }
+
     } else {
         System.out.println("Registration failed - Invalid verification code");
     }
+}
+
+
+private static void registerCustomerAfterUserRegistration(String email) {
+    System.out.println("\nComplete your customer profile:");
+    System.out.println("Enter your name:");
+    String name = getInputString();
+    System.out.println("Enter your phone number:");
+    String phoneNumber = getInputString();
+    System.out.println("Enter your address:");
+    String address = getInputString();
+
+    Customer customer = new Customer(email, name, address, phoneNumber);
+        customerList.add(customer);
+        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "')");
+        System.out.println("Customer registered successfully!");
+        actionStack.push("Registered customer with email: " + email);
 }
 
 private static boolean verifyStaffCode(String role, String correctCode) {
@@ -298,8 +319,8 @@ public static void showManagerMenu() {
 
 
 public static void showPatientMenu() {
-    System.out.println("1. View Prescriptions");
-    System.out.println("2. Purchase Drugs");
+    System.out.println("1. Drug Management");
+    System.out.println("2. Manage Cart");
     System.out.println("3. Help");
     System.out.println("4. Logout");
 }
@@ -323,7 +344,7 @@ public static void handleMenuChoice(int choice, User currentUser) {
 public static void handleManagerChoice(int choice, User currentUser) {
     switch (choice) {
         case 1:
-            drugManagement(); // Your existing method
+            drugManagement(currentUser); // Your existing method
             break;
         case 2:
             customerManagement(); // Your existing method
@@ -355,7 +376,7 @@ public static void handleManagerChoice(int choice, User currentUser) {
 public static void handlePatientChoice(int choice, User currentUser) {
     switch (choice) {
         case 1:
-            drugManagement(); // You'll need to implement this method
+            drugManagement(currentUser); // You'll need to implement this method
             break;
         case 2:
             manageCart(); // You'll need to implement this method
@@ -384,18 +405,18 @@ public static void logout() {
 
 
     // Show the main menu
-    private static void showMainMenu() {
-        System.out.println("\n--- Pharmacy Store Management System ---");
-        System.out.println("1. Drug Management");
-        System.out.println("2. Customer Management");
-        System.out.println("3. Manage Cart");
-        System.out.println("4. Print Actions Stack");
-        System.out.println("5. Generate Sales Report");
-        System.out.println("6. Alerts");
-        System.out.println("7. Help");
-        System.out.println("8. Exit");
-        System.out.print("Enter your choice: ");
-    }
+    // private static void showMainMenu() {
+    //     System.out.println("\n--- Pharmacy Store Management System ---");
+    //     System.out.println("1. Drug Management");
+    //     System.out.println("2. Customer Management");
+    //     System.out.println("3. Manage Cart");
+    //     System.out.println("4. Print Actions Stack");
+    //     System.out.println("5. Generate Sales Report");
+    //     System.out.println("6. Alerts");
+    //     System.out.println("7. Help");
+    //     System.out.println("8. Exit");
+    //     System.out.print("Enter your choice: ");
+    // }
 
     // User class definition removed as it's now using org.example.User
     
@@ -403,33 +424,69 @@ public static void logout() {
 
 
     // Manage drugs (add, update, delete, view, list expired, help)
-    private static void drugManagement() {
+    private static void drugManagement(User currentUser) {
         while (true) {
-            showDrugMenu(); // Show drug management menu
-            int choice = getInputInt();
-            switch (choice) {
-                case 1:
-                    addDrug(); // Add a new drug
-                    break;
-                case 2:
-                    updateDrug(); // Update an existing drug
-                    break;
-                case 3:
-                    deleteDrug(); // Delete a drug
-                    break;
-                case 4:
-                    viewDrugInventory(); // View all drugs
-                    break;
-                case 5:
-                    listExpiredDrugs(); // List expired drugs
-                    break;
-                case 6:
-                    help(); // Show help information
-                    break;
-                case 7:
-                    return; // Return to main menu
-                default:
-                    System.out.println("Invalid choice. Please try again.");
+            if (currentUser.getRole().equals("MANAGER")) {
+                System.out.println("\n=== Drug Management (Manager) ===");
+                System.out.println("1. Add Drug");
+                System.out.println("2. Update Drug");
+                System.out.println("3. Delete Drug");
+                System.out.println("4. View Drug Inventory");
+                System.out.println("5. List Expired Drugs");
+                System.out.println("6. Help");
+                System.out.println("7. Return to Main Menu");
+                
+                int choice = getInputInt();
+                switch (choice) {
+                    case 1:
+                        addDrug();
+                        break;
+                    case 2:
+                        updateDrug();
+                        break;
+                    case 3:
+                        deleteDrug();
+                        break;
+                    case 4:
+                        viewDrugInventory();
+                        break;
+                    case 5:
+                        listExpiredDrugs();
+                        break;
+                    case 6:
+                        help();
+                        break;
+                    case 7:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } else if (currentUser.getRole().equals("PATIENT")) {
+                System.out.println("\n=== Drug Management (Patient) ===");
+                System.out.println("1. View Drug Inventory");
+                System.out.println("2. Search Drug");
+                System.out.println("3. Help");
+                System.out.println("4. Return to Main Menu");
+                
+                int choice = getInputInt();
+                switch (choice) {
+                    case 1:
+                        viewDrugInventory();
+                        break;
+                    case 2:
+                        listExpiredDrugs();
+                        break;
+                    case 3:
+                        help();
+                        break;
+                    case 4:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } else {
+                System.out.println("Unauthorized access");
+                return;
             }
         }
     }

@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "org.example.Main",
+            "projectName": "Pharmacy_Management_System",
+            "java.home": "C:\\Program Files\\Java\\jdk-23",
+            "sourcePaths": ["${workspaceFolder}/src/main/java"],
+            "console": "externalTerminal"
+        }
+    ]
+}
