@@ -321,8 +321,9 @@ public static void showManagerMenu() {
 public static void showPatientMenu() {
     System.out.println("1. Drug Management");
     System.out.println("2. Manage Cart");
-    System.out.println("3. Help");
-    System.out.println("4. Logout");
+    System.out.println("3. Update Personal Information");
+    System.out.println("4. Help");
+    System.out.println("5. Logout");
 }
 
 public static void handleMenuChoice(int choice, User currentUser) {
@@ -382,9 +383,12 @@ public static void handlePatientChoice(int choice, User currentUser) {
             manageCart(); // You'll need to implement this method
             break;
         case 3:
-            help(); // Assuming this method exists
+            updatePatient(currentUser); // Assuming this method exists
             break;
         case 4:
+            help(); // Assuming this method exists
+            break;
+        case 5:
             logout();
             break;
         default:
@@ -605,7 +609,52 @@ public static void logout() {
         actionStack.push("Registered customer with email: " + email);
     }
 
+    private static void updatePatient(User currentUser) {
+        String email = currentUser.getEmail();
+        Customer customer = findCustomerByEmail(email);
+        if (customer == null) {
+            System.out.println("Customer not found." + email);
+            return;
+        }
 
+        String name = "";
+        String address = "";
+        String phoneNumber = "";
+
+        // Validate name
+        while (true) {
+            System.out.print("Enter new Customer Name: ");
+            name = scanner.nextLine();
+            if (isValidName(name)) {
+                break;
+            } else {
+                System.out.println("Invalid name. Name cannot contain numbers or special characters.");
+            }
+        }
+
+        // Address input
+        System.out.print("Enter new Customer Address: ");
+        address = scanner.nextLine();
+
+        // Validate phone number
+        while (true) {
+            System.out.print("Enter new Customer Phone Number: ");
+            phoneNumber = scanner.nextLine();
+            if (isValidPhoneNumber(phoneNumber)) {
+                break;
+            } else {
+                System.out.println("Invalid phone number. Phone number must contain only digits and be between 10 to 15 digits long.");
+            }
+        }
+
+        customer.setName(name);
+        customer.setAddress(address);
+        customer.setPhoneNumber(phoneNumber);
+
+        dbHandler.executeQuery("UPDATE Customers SET name='" + name + "', address='" + address + "', phone_number='" + phoneNumber + "' WHERE email='" + email + "'");
+        System.out.println("Customer updated successfully!");
+        actionStack.push("Updated customer with email: " + email);
+    }
     // Update customer information
     private static void updateCustomer() {
         System.out.print("Enter Customer Email to update: ");
