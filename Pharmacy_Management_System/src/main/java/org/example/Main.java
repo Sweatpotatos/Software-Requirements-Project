@@ -389,6 +389,7 @@ public static void showManagerMenu() {
     System.out.println("6. Show Alerts");
     System.out.println("7. Help");
     System.out.println("8. Logout");
+    System.out.print("Enter your choice: ");
 }
 
 
@@ -398,6 +399,7 @@ public static void showPatientMenu() {
     System.out.println("3. Update Personal Information");
     System.out.println("4. Help");
     System.out.println("5. Logout");
+    System.out.print("Enter your choice: ");
 }
 
 public static void handleMenuChoice(int choice, User currentUser) {
@@ -511,7 +513,7 @@ public static void logout() {
                 System.out.println("3. Delete Drug");
                 System.out.println("4. View Drug Inventory");
                 System.out.println("5. List Expired Drugs");
-                System.out.println("6. Help");
+                System.out.println("6. Search Drug");
                 System.out.println("7. Return to Main Menu");
                 
                 int choice = getInputInt();
@@ -543,7 +545,7 @@ public static void logout() {
                 System.out.println("\n=== Drug Management (Patient) ===");
                 System.out.println("1. View Drug Inventory");
                 System.out.println("2. View Cart");
-                System.out.println("3. Help");
+                System.out.println("6. Search Drug");
                 System.out.println("4. Return to Main Menu");
                 
                 int choice = getInputInt();
@@ -1163,7 +1165,7 @@ public static void logout() {
         System.out.println("2. View Cart");
         System.out.println("3. Checkout");
         System.out.println("4. Help");
-        System.out.println("5. Exit");
+        System.out.println("5. Back to Main Menu");
         System.out.print("Enter your choice: ");
     }
 
