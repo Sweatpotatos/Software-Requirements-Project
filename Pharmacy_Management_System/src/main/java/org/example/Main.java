@@ -389,8 +389,7 @@ public static void showManagerMenu() {
     System.out.println("4. View Action Stack");
     System.out.println("5. Generate Sales Report");
     System.out.println("6. Show Alerts");
-    System.out.println("7. Help");
-    System.out.println("8. Logout");
+    System.out.println("7. Logout");
     System.out.print("Enter your choice: ");
 }
 
@@ -399,8 +398,7 @@ public static void showPatientMenu() {
     System.out.println("1. Drug Management");
     System.out.println("2. Manage Cart");
     System.out.println("3. Update Personal Information");
-    System.out.println("4. Help");
-    System.out.println("5. Logout");
+    System.out.println("4. Logout");
     System.out.print("Enter your choice: ");
 }
 
@@ -440,10 +438,8 @@ public static void handleManagerChoice(int choice, User currentUser) {
         case 6:
             showAlerts(); // Your existing method
             break;
+        
         case 7:
-            help(); // Your existing method
-            break;
-        case 8:
             logout();
             break;
         default:
@@ -463,10 +459,8 @@ public static void handlePatientChoice(int choice, User currentUser) {
         case 3:
             updatePatient(currentUser); // Assuming this method exists
             break;
+        
         case 4:
-            help(); // Assuming this method exists
-            break;
-        case 5:
             logout();
             break;
         default:
@@ -605,9 +599,6 @@ public static void logout() {
                     checkout(cart);
                     return;
                 case 4:
-                    help();
-                    break;
-                case 5:
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -1168,8 +1159,7 @@ public static void logout() {
         System.out.println("1. Add Drug to Cart");
         System.out.println("2. View Cart");
         System.out.println("3. Checkout");
-        System.out.println("4. Help");
-        System.out.println("5. Back to Main Menu");
+        System.out.println("4. Back to Main Menu");
         System.out.print("Enter your choice: ");
     }
 
