@@ -6,6 +6,7 @@ public class Customer {
     private String address;
     private String phoneNumber;
     private String allergies;
+    private String insurance;
 
     public Customer(String email, String name, String address, String phoneNumber, String allergies) {
         this.email = email;
@@ -13,6 +14,7 @@ public class Customer {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.allergies = allergies;
+        this.insurance = insurance;
     }
 
     // Getters and Setters
@@ -30,6 +32,10 @@ public class Customer {
         return name;
     }
 
+    public String getInsurance() {
+        return insurance;
+    }
+
     public void setAllergies(String allergies) { this.allergies = allergies; }
     public void setName(String name) {
         this.name = name;
@@ -39,10 +45,16 @@ public class Customer {
         this.address = address;
     }
 
+    public void setInsurance(String insurance) {
+        this.insurance = insurance;
+    }
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
+
+    
     @Override
     public String toString() {
         return "Customer{" +

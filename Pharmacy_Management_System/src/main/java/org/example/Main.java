@@ -302,13 +302,21 @@ private static void registerCustomerAfterUserRegistration(String email) {
         address = getInputString();
     }
 
+    System.out.println("Enter your insurance claim:");
+    String insurance = getInputString();
+
+    while (!insurance.matches("[a-zA-Z0-9 ]{12,}")) {
+        System.out.println("Invalid insurance claim. Please enter an insurance claim containing only letters and numbers and at least 12 characters long:");
+        insurance = getInputString();
+    }
+
     String allergies = getAllergySelections();
 
     Customer customer = new Customer(email, name, address, phoneNumber, allergies);
-        customerList.add(customer);
-        dbHandler.executeQuery("INSERT INTO Customers VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "', '" + allergies + "')");
-        System.out.println("Customer registered successfully!");
-        actionStack.push("Registered customer with email: " + email);
+    customerList.add(customer);
+    dbHandler.executeQuery("INSERT INTO Customers (email, name, address, phone_number, allergies, insurance) VALUES ('" + email + "', '" + name + "', '" + address + "', '" + phoneNumber + "', '" + allergies + "', '" + insurance + "')");
+    System.out.println("Customer registered successfully!");
+    actionStack.push("Registered customer with email: " + email);
 }
 
 private static boolean verifyStaffCode(String role, String correctCode) {
