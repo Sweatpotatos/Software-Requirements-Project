@@ -1,11 +1,10 @@
 Invoice
 Order ID: 1
 Customer Email: yaoleib@gmail.com
-Order Date: 2024-12-03
+Order Date: 2024-12-04
 
 Drug ID    Drug Name            Manufacturer    Quantity   Price     
 1001       Aspirin              PharmaCorp      1          5.99      
 1003       Paracetamol          MediLife        1          3.99      
-1002       Ibuprofen            HealthPlus      1          10.99     
 
-Total Amount: $20.97
+Total Amount: $9.98

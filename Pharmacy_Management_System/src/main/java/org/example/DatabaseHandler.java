@@ -124,21 +124,20 @@ public class DatabaseHandler {
                 "JOIN Drugs d ON oi.drug_id = d.drug_id " +
                 "WHERE o.order_date BETWEEN ? AND ? " +
                 "GROUP BY oi.drug_id, d.drug_name";
-
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/pharmacy", "postgres", "1806");
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
+    
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+    
             statement.setDate(1, new java.sql.Date(startDate.getTime()));
             statement.setDate(2, new java.sql.Date(endDate.getTime()));
             ResultSet resultSet = statement.executeQuery();
-
+    
             String filePath = "sales_report_" + new SimpleDateFormat("yyyyMMdd").format(endDate) + ".txt";
             try (FileWriter writer = new FileWriter(filePath)) {
                 writer.write("Sales Report\n");
                 writer.write("Start Date: " + new SimpleDateFormat("yyyy-MM-dd").format(startDate) + "\n");
                 writer.write("End Date: " + new SimpleDateFormat("yyyy-MM-dd").format(endDate) + "\n\n");
                 writer.write(String.format("%-10s %-20s %-15s %-15s\n", "Drug ID", "Drug Name", "Total Quantity", "Total Earnings"));
-
+    
                 double totalEarnings = 0;
                 while (resultSet.next()) {
                     int drugId = resultSet.getInt("drug_id");
@@ -146,11 +145,11 @@ public class DatabaseHandler {
                     int totalQuantity = resultSet.getInt("total_quantity");
                     double earnings = resultSet.getDouble("total_earnings");
                     totalEarnings += earnings;
-
+    
                     writer.write(String.format("%-10d %-20s %-15d %-15.2f\n", drugId, drugName, totalQuantity, earnings));
                 }
                 writer.write(String.format("\nTotal Earnings: $%.2f\n", totalEarnings));
-
+    
                 System.out.println("Sales report generated: " + filePath);
             } catch (IOException e) {
                 System.out.println("Error writing sales report: " + e.getMessage());

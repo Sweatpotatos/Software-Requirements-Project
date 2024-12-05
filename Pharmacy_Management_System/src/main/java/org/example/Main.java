@@ -74,7 +74,7 @@ public class Main {
 
     private static User login() {
     System.out.println("Enter email:");
-    String email = getInputString();
+    String email = getInputString().toLowerCase();
     System.out.println("Enter password:");
     String password = getInputString();
 
@@ -406,7 +406,7 @@ public static void showManagerMenu() {
     System.out.println("3. Manage Cart");
     System.out.println("4. View Action Stack");
     System.out.println("5. Generate Sales Report");
-    System.out.println("6. Show Alerts");
+    System.out.println("6. Expired Drugs");
     System.out.println("7. Logout");
     System.out.print("Enter your choice: ");
 }
@@ -491,8 +491,7 @@ public static void handlePatientChoice(int choice, User currentUser) {
 
 public static void logout() {
     System.out.println("Logging out...");
-    dbHandler.closeConnection();
-    System.exit(0);
+    main(new String[]{});
 }
 
 
