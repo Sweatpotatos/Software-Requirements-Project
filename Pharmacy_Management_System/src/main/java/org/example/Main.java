@@ -40,6 +40,7 @@ public class Main {
             System.out.println("2. Register");
             System.out.println("3. Forgot Password");
             System.out.println("4. Exit");
+            System.err.println("Enter your choice: ");
             int choice = getInputInt();
             switch (choice) {
                 case 1:
@@ -128,6 +129,7 @@ private static void registerUser() {
     System.out.println("2. Pharmacist");
     System.out.println("3. Technician");
     System.out.println("4. Patient");
+    System.err.println("Enter your choice: ");
     
     int roleChoice = getInputInt();
     String role;
@@ -515,6 +517,7 @@ public static void logout() {
                 System.out.println("5. List Expired Drugs");
                 System.out.println("6. Search Drug");
                 System.out.println("7. Return to Main Menu");
+                System.err.println("Enter your choice: ");
                 
                 int choice = getInputInt();
                 switch (choice) {
@@ -547,6 +550,7 @@ public static void logout() {
                 System.out.println("2. View Cart");
                 System.out.println("6. Search Drug");
                 System.out.println("4. Return to Main Menu");
+                System.err.println("Enter your choice: ");
                 
                 int choice = getInputInt();
                 switch (choice) {
