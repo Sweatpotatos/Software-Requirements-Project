@@ -289,8 +289,8 @@ private static void registerCustomerAfterUserRegistration(String email) {
     System.out.println("Enter your phone number:");
     String phoneNumber = getInputString();
 
-    while (!phoneNumber.matches("\\d{10}")) {
-        System.out.println("Invalid phone number format. Please enter a 10-digit phone number:");
+    while (!phoneNumber.matches("\\d{10,15}")) {
+        System.out.println("Invalid phone number format. Please enter a phone number with 10 to 15 digits:");
         phoneNumber = getInputString();
     }
     
@@ -686,38 +686,56 @@ public static void logout() {
         // email
         while (true) {
             System.out.print("Enter Customer Email: ");
-            scanner.nextLine();
-            email = scanner.nextLine().trim(); // Use trim to remove any leading or trailing whitespace
-            if (!email.isEmpty()) {
+            email = scanner.nextLine().trim().toLowerCase(); // Convert to lowercase and trim whitespace
+        
+            if (!email.isEmpty() && isValidEmail(email)) {
                 if (isEmailExists(email)) {
                     System.out.println("Email already exists in the database. Aborting registration.");
                     return; // Abort registration
                 }
                 break;
             } else {
-                System.out.println("Email cannot be null");
+                System.out.println("Invalid email format. Please enter a valid email.");
             }
         }
 
         // Validate name
+        String firstName;
+        String lastName;
+
+        // Validate first name
         while (true) {
-            System.out.print("Enter Customer Name: ");
-            name = scanner.nextLine().trim();
-            if (name != null && isValidName(name) && !name.isEmpty()) {
+            System.out.print("Enter First Name: ");
+            firstName = scanner.nextLine().trim();
+            if (firstName != null && isValidName(firstName) && !firstName.isEmpty()) {
                 break;
             } else {
                 System.out.println("Invalid name. Name cannot be null, contain numbers, or special characters.");
             }
         }
 
+        // Validate last name
+        while (true) {
+            System.out.print("Enter Last Name: ");
+            lastName = scanner.nextLine().trim();
+            if (lastName != null && isValidName(lastName) && !lastName.isEmpty()) {
+                break;
+            } else {
+                System.out.println("Invalid name. Name cannot be null, contain numbers, or special characters.");
+            }
+        }
+
+        // Combine first name and last name
+        name = firstName + " " + lastName;
+
         // Validate address
         while (true) {
             System.out.print("Enter Customer Address: ");
             address = scanner.nextLine().trim();
-            if (address != null && !address.isEmpty()) {
+            if (address != null && !address.isEmpty() && address.length() >= 12) {
                 break;
             } else {
-                System.out.println("Address cannot be null or empty.");
+                System.out.println("Address cannot be null, empty, and must be at least 12 characters long.");
             }
         }
 
