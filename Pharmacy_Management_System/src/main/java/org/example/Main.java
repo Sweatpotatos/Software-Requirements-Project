@@ -393,10 +393,22 @@ public static void showMainMenu(User currentUser) {
         case "patient":
             showPatientMenu();
             break;
+        
+        case "pharmacist":
+            showPharmacistMenu();
+            break;
         default:
             System.out.println("Unknown role. Access denied.");
             System.exit(0);
     }
+}
+
+public static void showPharmacistMenu() {
+    System.out.println("Pharmacist Menu:");
+    System.out.println("1. Drug Management");
+    System.out.println("2. Send Subscription to Patient's Cart");
+    System.out.println("3. Logout");
+    System.out.print("Enter your choice: ");
 }
 
 
@@ -428,6 +440,9 @@ public static void handleMenuChoice(int choice, User currentUser) {
             break;
         case "patient":
             handlePatientChoice(choice, currentUser);
+            break;
+        case "pharmacist": 
+            handlePharmacistChoice(choice, currentUser);
             break;
         default:
             System.out.println("Unknown role. Exiting.");
@@ -465,6 +480,90 @@ public static void handleManagerChoice(int choice, User currentUser) {
     }
 }
 
+
+public static void handlePharmacistChoice(int choice, User currentUser) {
+    switch (choice) {
+        case 1:
+            drugManagement(currentUser); // Your existing method
+            break;
+        case 2:
+            sendSubscriptionToPatientCart();
+            break;
+        case 3:
+            logout();
+            break;
+        default:
+            System.out.println("Invalid choice. Please try again.");
+    }
+}
+
+private static void sendSubscriptionToPatientCart() {
+    scanner.nextLine(); // Consume the leftover newline character
+    System.out.print("Enter Patient Email: ");
+    String email = scanner.nextLine().trim().toLowerCase();
+
+    if (!isValidEmail(email)) {
+        System.out.println("Invalid email format.");
+        return;
+    }
+
+    if (!isEmailExists(email)) {
+        System.out.println("No patient found with this email.");
+        return;
+    }
+
+    Customer customer = findCustomerByEmail(email);
+    if (customer == null) {
+        System.out.println("Error retrieving customer information.");
+        return;
+    }
+
+    System.out.println("Customer Name: " + customer.getName());
+    System.out.println("Allergies: " + formatAllergies(customer.getAllergies()));
+
+    System.out.print("Is this the correct patient? (yes/no): ");
+    String confirmation = scanner.nextLine().trim().toLowerCase();
+    if (!confirmation.equals("yes")) {
+        System.out.println("Operation cancelled.");
+        return;
+    }
+
+    Cart cart = findCartByEmail(email);
+    if (cart == null) {
+        cart = new Cart(cartIdCounter++, email);
+        cartList.add(cart);
+    }
+
+    boolean exit = false;
+    while (!exit) {
+        showCartMenu();
+        int choice = getInputInt();
+        switch (choice) {
+            case 1:
+                addDrugToCart(cart);
+                break;
+            case 2:
+                viewCart(cart);
+                break;
+            case 3:
+                checkout(cart);
+                exit = true;
+                break;
+            case 4:
+                exit = true;
+                break;
+            default:
+                System.out.println("Invalid choice. Please try again.");
+        }
+    }
+}
+
+private static String formatAllergies(String allergies) {
+    if (allergies == null || allergies.isEmpty()) {
+        return "None";
+    }
+    return String.join(", ", allergies.split(","));
+}
 
 public static void handlePatientChoice(int choice, User currentUser) {
     switch (choice) {
@@ -559,7 +658,32 @@ public static void logout() {
                 System.out.println("\n=== Drug Management (Patient) ===");
                 System.out.println("1. View Drug Inventory");
                 System.out.println("2. View Cart");
-                System.out.println("6. Search Drug");
+                System.out.println("3. Search Drug");
+                System.out.println("4. Return to Main Menu");
+                System.err.println("Enter your choice: ");
+                
+                int choice = getInputInt();
+                switch (choice) {
+                    case 1:
+                        viewDrugInventory();
+                        break;
+                    case 2:
+                        patientCart(currentUser);
+                        break;
+                    case 3:
+                        help();
+                        break;
+                    case 4:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            }
+            else if (currentUser.getRole().equals("PHARMACIST")) {
+                System.out.println("\n=== Drug Management (PHARMACIST) ===");
+                System.out.println("1. View Drug Inventory");
+                System.out.println("2. View PHARMACIST Cart");
+                System.out.println("3. Search Drug");
                 System.out.println("4. Return to Main Menu");
                 System.err.println("Enter your choice: ");
                 
@@ -1541,12 +1665,22 @@ private static void checkout(Cart cart) {
 
 
     // Find customer by email
-    private static Customer findCustomerByEmail(String email) {
-        for (int i = 0; i < customerList.size(); i++) {
-            Customer customer = customerList.get(i);
-            if (customer.getEmail().equals(email)) {
-                return customer;
+    public static Customer findCustomerByEmail(String email) {
+        String query = "SELECT email, name, address, phone_number, allergy FROM Customers WHERE email = ?";
+        try (PreparedStatement statement = dbHandler.getConnection().prepareStatement(query)) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String customerEmail = resultSet.getString("email");
+                String name = resultSet.getString("name");
+                String address = resultSet.getString("address");
+                String phoneNumber = resultSet.getString("phone_number");
+                String allergies = resultSet.getString("allergy");
+                System.out.println("checking..."); // Debug statement
+                return new Customer(customerEmail, name, address, phoneNumber, allergies);
             }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving customer information: " + e.getMessage());
         }
         return null;
     }
