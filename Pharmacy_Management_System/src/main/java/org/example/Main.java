@@ -23,49 +23,7 @@ public class Main {
     private static final String MANAGER_CODE = "MGR123";
     private static final String PHARMACIST_CODE = "PHARM456";
     private static final String TECHNICIAN_CODE = "TECH789";
-    // public static void main(String[] args) {
-    //     dbHandler.connect(); // Connect to the database
-    //     loadInitialData(); // Load initial data from the database
-    //     // WELCOME MESSAGE
-    //     System.out.println("\n                                       *---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*");
-    //     System.out.println("                                       *--------------------------WELCOME TO---------------------------*");
-    //     System.out.println("                                       *------------------PHARMACY MANAGEMENT SYSTEM-------------------*");
-    //     System.out.println("                                       *---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*");
-
-    //     while (true) {
-    //         showMainMenu(); // Show the main menu
-    //         int choice = getInputInt();
-    //         switch (choice) {
-    //             case 1:
-    //                 drugManagement(); // Manage drugs
-    //                 break;
-    //             case 2:
-    //                 customerManagement(); // Manage customers
-    //                 break;
-    //             case 3:
-    //                 manageCart(); // Manage cart
-    //                 break;
-    //             case 4:
-    //                 actionStack.printStack(); // Print the actions stack
-    //                 break;
-    //             case 5:
-    //                 report(); // Generate sales report
-    //                 break;
-    //             case 6:
-    //                 showAlerts(); // Show alerts for low stock and expired drugs
-    //                 break;
-    //             case 7:
-    //                 help(); // Show help information
-    //                 break;
-    //             case 8:
-    //                 System.out.println("Exiting...");
-    //                 dbHandler.closeConnection(); // Close the database connection
-    //                 return;
-    //             default:
-    //                 System.out.println("Invalid choice. Please try again.");
-    //         }
-    //     }
-    // }
+    
 
         public static void main(String[] args) {
         dbHandler.connect(); // Connect to the database
@@ -80,7 +38,8 @@ public class Main {
         while (currentUser == null) {
             System.out.println("\n1. Login");
             System.out.println("2. Register");
-            System.out.println("3. Exit");
+            System.out.println("3. Forgot Password");
+            System.out.println("4. Exit");
             int choice = getInputInt();
             switch (choice) {
                 case 1:
@@ -89,7 +48,10 @@ public class Main {
                 case 2:
                     registerUser();
                     break;
+                
                 case 3:
+                    forgotPassword();
+                case 4:
                     System.out.println("Exiting...");
                     dbHandler.closeConnection();
                     System.exit(0);
@@ -105,6 +67,8 @@ public class Main {
         }
     
     }
+
+    
 
 
     private static User login() {
@@ -154,6 +118,11 @@ private static void registerUser() {
     System.out.println("Enter your password:");
     String password = getInputString();
     
+    System.out.println("Enter your security question:");
+    String securityQuestion = getInputString();
+    System.out.println("Enter the answer to your security question:");
+    String securityAnswer = getInputString();
+    
     System.out.println("\nSelect role:");
     System.out.println("1. Manager");
     System.out.println("2. Pharmacist");
@@ -189,7 +158,7 @@ private static void registerUser() {
     
     if (isValidRegistration) {
         String hashedPassword = hashPassword(password);
-        addUserToDatabase(email, hashedPassword, role);
+        addUserToDatabase(email, hashedPassword, role, securityQuestion, securityAnswer);
         System.out.println("Registration successful!");
         if (role.equals("PATIENT")) {
             registerCustomerAfterUserRegistration(email);
@@ -199,6 +168,65 @@ private static void registerUser() {
         System.out.println("Registration failed - Invalid verification code");
     }
 }
+
+
+private static void forgotPassword() {
+    System.out.println("Enter your email:");
+    String email = getInputString();
+
+    String query = "SELECT security_question, security_answer FROM users WHERE email = ?";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            String securityQuestion = rs.getString("security_question");
+            String correctAnswer = rs.getString("security_answer");
+
+            System.out.println("Security question: " + securityQuestion);
+            System.out.println("Enter your answer:");
+            String answer = getInputString();
+
+            if (answer.equals(correctAnswer)) {
+                System.out.println("Enter your new password:");
+                String newPassword = getInputString();
+                String hashedPassword = hashPassword(newPassword);
+
+                String updateQuery = "UPDATE users SET password = ? WHERE email = ?";
+                try (PreparedStatement updateStmt = dbHandler.getConnection().prepareStatement(updateQuery)) {
+                    updateStmt.setString(1, hashedPassword);
+                    updateStmt.setString(2, email);
+                    updateStmt.executeUpdate();
+                    System.out.println("Password updated successfully!");
+                    main(new String[]{});
+                }
+            } else {
+                System.out.println("Incorrect answer to the security question.");
+            }
+        } else {
+            System.out.println("No user found with that email.");
+        }
+    } catch (SQLException e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+
+
+private static void addUserToDatabase(String email, String hashedPassword, String role, String securityQuestion, String securityAnswer) {
+    String query = "INSERT INTO users (email, password, role, security_question, security_answer) VALUES (?, ?, ?, ?, ?)";
+    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+        stmt.setString(1, email);
+        stmt.setString(2, hashedPassword);
+        stmt.setString(3, role);
+        stmt.setString(4, securityQuestion);
+        stmt.setString(5, securityAnswer);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+
 
 private static String getAllergySelections() {
     System.out.println("\nSelect your allergies (Enter numbers separated by commas, or 0 for none):");
@@ -293,13 +321,13 @@ private static boolean isEmailExists(String email) {
         stmt.setString(1, email);
         
         // Debug prints
-        System.out.println("Executing query: " + query);
+        System.out.println("Checking email...");
         System.out.println("With email: " + email);
         
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
             int count = rs.getInt(1);
-            System.out.println("Found " + count + " matching emails"); // Debug print
+            System.out.println("email is unique"); // Debug print
             return count > 0;
         }
     } catch (SQLException e) {
