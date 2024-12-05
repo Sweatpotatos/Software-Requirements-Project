@@ -104,12 +104,12 @@ public class Main {
 
 private static void registerUser() {
     System.out.println("Enter your email:");
-    String email = getInputString();
+    String email = getInputString().toLowerCase();
     
-    if (!isValidEmail(email)) {
-        System.out.println("Invalid email format");
-        return;
-    }
+    while (!isValidEmail(email)) {
+        System.out.println("Invalid email format. Please enter a valid email:");
+        email = getInputString().toLowerCase();
+    }   
     
     if (isEmailExists(email)) {
         System.out.println("User already exists with this email.");
@@ -231,7 +231,6 @@ private static void addUserToDatabase(String email, String hashedPassword, Strin
 
 
 private static String getAllergySelections() {
-    System.out.println("\nSelect your allergies (Enter numbers separated by commas, or 0 for none):");
     System.out.println("0. None");
     System.out.println("1. Penicillin allergy");
     System.out.println("2. Sulfa allergy");
@@ -246,6 +245,7 @@ private static String getAllergySelections() {
     System.out.println("11. Methotrexate allergy");
     System.out.println("12. Chloramphenicol allergy");
     System.out.println("13. Lidocaine allergy");
+    System.out.println("Enter your selection(s) separated by commas:");
 
     String input = getInputString();
     if (input.equals("0") || input.toLowerCase().equals("none")) {
@@ -278,12 +278,30 @@ private static String getAllergySelections() {
 
 private static void registerCustomerAfterUserRegistration(String email) {
     System.out.println("\nComplete your customer profile:");
-    System.out.println("Enter your name:");
-    String name = getInputString();
+    System.out.println("Enter your first name:");
+    String firstName = getInputString();
+
+    System.out.println("Enter your last name:");
+    String lastName = getInputString();
+
+    String name = firstName + " " + lastName;
+    System.out.println("Full name: " + name);
     System.out.println("Enter your phone number:");
     String phoneNumber = getInputString();
+
+    while (!phoneNumber.matches("\\d{10}")) {
+        System.out.println("Invalid phone number format. Please enter a 10-digit phone number:");
+        phoneNumber = getInputString();
+    }
+    
     System.out.println("Enter your address:");
     String address = getInputString();
+
+    while (!address.matches("[a-zA-Z0-9 ]{12,}")) {
+        System.out.println("Invalid address...:");
+        address = getInputString();
+    }
+
     String allergies = getAllergySelections();
 
     Customer customer = new Customer(email, name, address, phoneNumber, allergies);
@@ -313,7 +331,7 @@ private static void addUserToDatabase(String email, String hashedPassword, Strin
 }
 
 private static boolean isValidEmail(String email) {
-    String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+    String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
     return email.matches(emailRegex);
 }
 
