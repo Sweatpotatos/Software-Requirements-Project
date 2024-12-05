@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class DatabaseHandler {
@@ -117,16 +118,17 @@ public class DatabaseHandler {
         }
     }
 
-    public void generateSalesReport(java.util.Date startDate, java.util.Date endDate) {
-        String query = "SELECT oi.drug_id, d.drug_name, SUM(oi.quantity) AS total_quantity, SUM(oi.quantity * oi.price) AS total_earnings " +
-                "FROM OrderItems oi " +
-                "JOIN Orders o ON oi.order_id = o.order_id " +
-                "JOIN Drugs d ON oi.drug_id = d.drug_id " +
-                "WHERE o.order_date BETWEEN ? AND ? " +
-                "GROUP BY oi.drug_id, d.drug_name";
+    public void generateSalesReport(Date startDate, Date endDate) {
+        String query = "SELECT o.order_id, o.order_date, c.email, c.name, " +
+                       "oi.drug_id, d.drug_name, oi.quantity, oi.price, (oi.quantity * oi.price) AS earnings " +
+                       "FROM OrderItems oi " +
+                       "JOIN Orders o ON oi.order_id = o.order_id " +
+                       "JOIN Drugs d ON oi.drug_id = d.drug_id " +
+                       "JOIN Customers c ON o.email = c.email " + // Corrected join condition
+                       "WHERE o.order_date >= ? AND o.order_date <= ? " +
+                       "ORDER BY o.order_date, o.order_id";
     
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-    
             statement.setDate(1, new java.sql.Date(startDate.getTime()));
             statement.setDate(2, new java.sql.Date(endDate.getTime()));
             ResultSet resultSet = statement.executeQuery();
@@ -136,21 +138,32 @@ public class DatabaseHandler {
                 writer.write("Sales Report\n");
                 writer.write("Start Date: " + new SimpleDateFormat("yyyy-MM-dd").format(startDate) + "\n");
                 writer.write("End Date: " + new SimpleDateFormat("yyyy-MM-dd").format(endDate) + "\n\n");
-                writer.write(String.format("%-10s %-20s %-15s %-15s\n", "Drug ID", "Drug Name", "Total Quantity", "Total Earnings"));
     
-                double totalEarnings = 0;
+                double grandTotal = 0.0;
+                
                 while (resultSet.next()) {
-                    int drugId = resultSet.getInt("drug_id");
+                    int orderId = resultSet.getInt("order_id");
+                    Date orderDate = new Date(resultSet.getDate("order_date").getTime());
+                    String customerEmail = resultSet.getString("email");
+                    String customerName = resultSet.getString("name");
                     String drugName = resultSet.getString("drug_name");
-                    int totalQuantity = resultSet.getInt("total_quantity");
-                    double earnings = resultSet.getDouble("total_earnings");
-                    totalEarnings += earnings;
-    
-                    writer.write(String.format("%-10d %-20s %-15d %-15.2f\n", drugId, drugName, totalQuantity, earnings));
+                    int quantity = resultSet.getInt("quantity");
+                    double price = resultSet.getDouble("price");
+                    double earnings = resultSet.getDouble("earnings");
+                    
+                    writer.write("Order ID: " + orderId + "\n");
+                    writer.write("Date: " + new SimpleDateFormat("yyyy-MM-dd").format(orderDate) + "\n");
+                    writer.write("Customer: " + customerName + " (" + customerEmail + ")\n");
+                    writer.write(String.format("Drug: %s, Quantity: %d, Price: $%.2f, Total: $%.2f\n", 
+                        drugName, quantity, price, earnings));
+                    writer.write("----------------------------------------\n");
+                    
+                    grandTotal += earnings;
                 }
-                writer.write(String.format("\nTotal Earnings: $%.2f\n", totalEarnings));
-    
+                
+                writer.write(String.format("\nGrand Total: $%.2f\n", grandTotal));
                 System.out.println("Sales report generated: " + filePath);
+                
             } catch (IOException e) {
                 System.out.println("Error writing sales report: " + e.getMessage());
             }
@@ -158,7 +171,7 @@ public class DatabaseHandler {
             System.out.println("Error generating sales report: " + e.getMessage());
         }
     }
-
+    
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

@@ -1,9 +1,16 @@
 Sales Report
-Start Date: 2004-04-20
+Start Date: 2004-04-22
 End Date: 2024-12-04
 
-Drug ID    Drug Name            Total Quantity  Total Earnings 
-1001       Aspirin              1               5.99           
-1003       Paracetamol          1               3.99           
+Order ID: 1
+Date: 2024-12-04
+Customer: yaolei bian (yaoleib@gmail.com)
+Drug: Aspirin, Quantity: 1, Price: $5.99, Total: $5.99
+----------------------------------------
+Order ID: 1
+Date: 2024-12-04
+Customer: yaolei bian (yaoleib@gmail.com)
+Drug: Paracetamol, Quantity: 1, Price: $3.99, Total: $3.99
+----------------------------------------
 
-Total Earnings: $9.98
+Grand Total: $9.98
