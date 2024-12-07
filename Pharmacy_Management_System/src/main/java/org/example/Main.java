@@ -326,17 +326,17 @@ private static boolean verifyStaffCode(String role, String correctCode) {
 }
 
 
-private static void addUserToDatabase(String email, String hashedPassword, String role) {
-    String query = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
-    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
-        stmt.setString(1, email);
-        stmt.setString(2, hashedPassword);
-        stmt.setString(3, role);
-        stmt.executeUpdate();
-    } catch (SQLException e) {
-        System.out.println("Error creating user: " + e.getMessage());
-    }
-}
+// private static void addUserToDatabase(String email, String hashedPassword, String role) {
+//     String query = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
+//     try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+//         stmt.setString(1, email);
+//         stmt.setString(2, hashedPassword);
+//         stmt.setString(3, role);
+//         stmt.executeUpdate();
+//     } catch (SQLException e) {
+//         System.out.println("Error creating user: " + e.getMessage());
+//     }
+// }
 
 private static boolean isValidEmail(String email) {
     String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
@@ -365,17 +365,17 @@ private static boolean isEmailExists(String email) {
     return false;
 }
 
-private static void addUserToDatabase(String email, String hashedPassword) {
-    String query = "INSERT INTO users (email, password, role) VALUES (?, ?, 'USER')";
-    try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
-        stmt.setString(1, email);
-        stmt.setString(2, hashedPassword);
-        stmt.executeUpdate();
-    } catch (SQLException e) {
-        System.out.println("Error adding user: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
+// private static void addUserToDatabase(String email, String hashedPassword) {
+//     String query = "INSERT INTO users (email, password, role) VALUES (?, ?, 'USER')";
+//     try (PreparedStatement stmt = dbHandler.getConnection().prepareStatement(query)) {
+//         stmt.setString(1, email);
+//         stmt.setString(2, hashedPassword);
+//         stmt.executeUpdate();
+//     } catch (SQLException e) {
+//         System.out.println("Error adding user: " + e.getMessage());
+//         e.printStackTrace();
+//     }
+// }
 
 private static String hashPassword(String password) {
     try {
